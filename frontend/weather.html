@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather Alerts KisanCare</title>
+
+    <meta name="description"
+        content="Real-time hyper-local weather forecasts, 7-day outlook, and AI-powered farming advisories for irrigation, sowing, and spraying.">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/chat.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        /* ???????????? Weather Page Styles ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        :root {
+
+            --sky-blue: #0ea5e9;
+
+            --sky-dark: #0369a1;
+
+            --green: #27ae60;
+
+            --green-dark: #1e8449;
+
+            --warn: #f59e0b;
+
+            --danger: #ef4444;
+
+            --frost: #60a5fa;
+
+            --card-bg: #ffffff;
+
+            --border: #e5e7eb;
+
+        }
+
+
+
+        /* ???????????? Mock data banner ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        #mockBanner {
+
+            display: none;
+
+            background: linear-gradient(90deg, #fef3c7, #fffbeb);
+
+            border: 1.5px solid #fcd34d;
+
+            border-radius: 12px;
+
+            padding: 12px 18px;
+
+            margin-bottom: 20px;
+
+            font-size: 0.85rem;
+
+            color: #92400e;
+
+            align-items: center;
+
+            gap: 10px;
+
+        }
+
+        #mockBanner.visible {
+            display: flex;
+        }
+
+        #mockBanner .material-icons {
+            color: #f59e0b;
+            font-size: 1.1rem;
+        }
+
+
+
+        /* ???????????? Search card ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        .search-card {
+
+            background: linear-gradient(135deg, #0f4c81 0%, #0ea5e9 100%);
+
+            border-radius: 20px;
+
+            padding: 32px 36px;
+
+            margin-bottom: 24px;
+
+            position: relative;
+
+            overflow: hidden;
+
+            color: #fff;
+
+        }
+
+        .search-card::after {
+
+            content: '';
+
+            position: absolute;
+
+            right: 28px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            font-size: 7rem;
+
+            opacity: 0.12;
+
+        }
+
+        .search-card h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0 0 6px;
+        }
+
+        .search-card p {
+            opacity: 0.85;
+            font-size: 0.9rem;
+            margin: 0 0 20px;
+            max-width: 500px;
+        }
+
+
+
+        .search-row {
+
+            display: flex;
+
+            gap: 12px;
+
+            max-width: 560px;
+
+        }
+
+        .search-row input {
+
+            flex: 1;
+
+            padding: 12px 16px;
+
+            border-radius: 12px;
+
+            border: none;
+
+            font-size: 0.95rem;
+
+            font-family: 'Poppins', sans-serif;
+
+            outline: none;
+
+            background: rgba(255, 255, 255, 0.95);
+
+            color: #1a2e1a;
+
+        }
+
+        .btn-search-weather {
+
+            padding: 12px 22px;
+
+            background: #fff;
+
+            color: #0369a1;
+
+            border: none;
+
+            border-radius: 12px;
+
+            font-family: 'Poppins', sans-serif;
+
+            font-weight: 700;
+
+            font-size: 0.9rem;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            white-space: nowrap;
+
+            transition: all 0.2s;
+
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+
+        }
+
+        .btn-search-weather:hover {
+            background: #e0f2fe;
+            transform: translateY(-1px);
+        }
+
+        .btn-search-weather:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+
+
+        /* ???????????? Error message ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        #weatherError {
+
+            display: none;
+
+            background: #fee2e2;
+
+            border: 1px solid #fca5a5;
+
+            border-radius: 10px;
+
+            padding: 12px 16px;
+
+            color: #991b1b;
+
+            font-size: 0.85rem;
+
+            margin-bottom: 20px;
+
+        }
+
+
+
+        /* ???????????? Loading skeleton ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        .skeleton {
+
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+
+            background-size: 200% 100%;
+
+            animation: shimmer 1.5s infinite;
+
+            border-radius: 8px;
+
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position: -200% 0;
+            }
+        }
+
+
+
+        /* ???????????? Current weather card ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        #weatherDisplay {
+            display: none;
+        }
+
+
+
+        .current-card {
+
+            background: linear-gradient(135deg, #1e3a5f 0%, #0ea5e9 100%);
+
+            border-radius: 20px;
+
+            padding: 32px 36px;
+
+            color: #fff;
+
+            margin-bottom: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            flex-wrap: wrap;
+
+            gap: 20px;
+
+        }
+
+        .current-main .location-name {
+
+            font-size: 1.3rem;
+
+            font-weight: 600;
+
+            opacity: 0.9;
+
+            margin-bottom: 4px;
+
+        }
+
+        .current-main .big-temp {
+
+            font-size: 4.5rem;
+
+            font-weight: 800;
+
+            line-height: 1;
+
+            margin-bottom: 6px;
+
+        }
+
+        .current-main .condition-text {
+
+            font-size: 1.1rem;
+
+            opacity: 0.85;
+
+            text-transform: capitalize;
+
+        }
+
+        .current-stats {
+
+            display: flex;
+
+            gap: 20px;
+
+            flex-wrap: wrap;
+
+        }
+
+        .stat-chip {
+
+            background: rgba(255, 255, 255, 0.15);
+
+            border-radius: 12px;
+
+            padding: 10px 16px;
+
+            text-align: center;
+
+            min-width: 80px;
+
+        }
+
+        .stat-chip .stat-val {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stat-chip .stat-lbl {
+            font-size: 0.7rem;
+            opacity: 0.75;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+
+
+        .sun-row {
+
+            display: flex;
+
+            gap: 16px;
+
+            margin-top: 16px;
+
+            flex-wrap: wrap;
+
+        }
+
+        .sun-item {
+
+            background: rgba(255, 255, 255, 0.12);
+
+            border-radius: 10px;
+
+            padding: 8px 14px;
+
+            font-size: 0.82rem;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+        }
+
+
+
+        /* ???????????? Section titles ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        .section-card {
+
+            background: #fff;
+
+            border-radius: 18px;
+
+            padding: 24px 28px;
+
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+
+            border: 1px solid var(--border);
+
+            margin-bottom: 20px;
+
+        }
+
+        .section-title {
+
+            font-size: 0.95rem;
+
+            font-weight: 700;
+
+            color: #1e3a5f;
+
+            margin: 0 0 18px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+        .section-title .material-icons {
+            font-size: 1.1rem;
+            color: var(--sky-blue);
+        }
+
+
+
+        /* ???????????? Hourly forecast ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        .hourly-row {
+
+            display: flex;
+
+            gap: 10px;
+
+            overflow-x: auto;
+
+            padding-bottom: 6px;
+
+        }
+
+        .hour-chip {
+
+            flex-shrink: 0;
+
+            background: #f0f9ff;
+
+            border: 1px solid #bae6fd;
+
+            border-radius: 14px;
+
+            padding: 12px 14px;
+
+            text-align: center;
+
+            min-width: 72px;
+
+        }
+
+        .hour-chip .h-time {
+            font-size: 0.72rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .hour-chip .h-icon {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+
+        .hour-chip .h-temp {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        .hour-chip .h-rain {
+            font-size: 0.68rem;
+            color: var(--sky-blue);
+            margin-top: 2px;
+        }
+
+
+
+        /* ???????????? 7-day forecast ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        .daily-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .day-row {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            padding: 12px 16px;
+
+            border-radius: 12px;
+
+            background: #f8fffe;
+
+            border: 1px solid #e5f5ec;
+
+            flex-wrap: wrap;
+
+        }
+
+        .day-row .day-name {
+            font-weight: 700;
+            color: #1e3a5f;
+            min-width: 110px;
+            font-size: 0.88rem;
+        }
+
+        .day-row .day-icon {
+            font-size: 1.6rem;
+        }
+
+        .day-row .day-desc {
+            flex: 1;
+            font-size: 0.82rem;
+            color: #64748b;
+            text-transform: capitalize;
+        }
+
+        .day-row .day-temps {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1e3a5f;
+            white-space: nowrap;
+        }
+
+        .day-row .day-rain {
+            font-size: 0.75rem;
+            color: var(--sky-blue);
+            white-space: nowrap;
+        }
+
+
+
+        /* ???????????? Advisory cards ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        .advisory-grid {
+
+            display: grid;
+
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+
+            gap: 14px;
+
+            margin-bottom: 20px;
+
+        }
+
+        .advisory-card {
+
+            border-radius: 14px;
+
+            padding: 18px;
+
+            border-left: 4px solid;
+
+        }
+
+        .advisory-card.good {
+            background: #f0fdf4;
+            border-color: #22c55e;
+        }
+
+        .advisory-card.caution {
+            background: #fffbeb;
+            border-color: #f59e0b;
+        }
+
+        .advisory-card.bad {
+            background: #fef2f2;
+            border-color: #ef4444;
+        }
+
+        .advisory-card.info {
+            background: #f0f9ff;
+            border-color: #0ea5e9;
+        }
+
+
+
+        .adv-title {
+
+            font-size: 0.78rem;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.5px;
+
+            margin-bottom: 6px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+        }
+
+        .adv-status {
+
+            font-size: 0.95rem;
+
+            font-weight: 700;
+
+            margin-bottom: 6px;
+
+        }
+
+        .adv-text {
+
+            font-size: 0.78rem;
+
+            line-height: 1.6;
+
+            color: #374151;
+
+        }
+
+
+
+        /* ???????????? Alert badges ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+        .alerts-row {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 8px;
+
+            margin-bottom: 16px;
+
+        }
+
+        .alert-badge {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 5px;
+
+            padding: 6px 14px;
+
+            border-radius: 20px;
+
+            font-size: 0.78rem;
+
+            font-weight: 700;
+
+        }
+
+        .alert-badge.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-badge.warn {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-badge.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .no-alerts {
+
+            font-size: 0.85rem;
+
+            color: #6b7280;
+
+            font-style: italic;
+
+        }
+
+
+
+        /* ???????????? OWM icon ?????? emoji map is done in JS ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????? */
+
+
+
+        @media (max-width: 640px) {
+
+            .search-card {
+                padding: 22px 18px;
+            }
+
+            .current-card {
+                padding: 22px 18px;
+            }
+
+            .current-main .big-temp {
+                font-size: 3rem;
+            }
+
+            .section-card {
+                padding: 18px 16px;
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+
+
+    <!-- KISANCARE PRO STANDARDIZED NAVBAR -->
+    <header class="app-header">
+        <nav class="app-navbar">
+            <!-- Brand Logo -->
+            <a href="home.html" class="nav-brand">
+                <div class="brand-icon"><span class="material-icons">eco</span></div>
+                <div class="brand-name">KisanCare<span>Pro</span></div>
+                <span class="badge-pro">AI 2.0</span>
+            </a>
+
+            <!-- Desktop Navigation Menu (Structured Categorized) -->
+            <ul class="nav-menu">
+                <!-- 1. Home -->
+                <li class="nav-item">
+                    <a href="home.html" class="nav-link" data-i18n="nav_home">
+                        <span class="material-icons">home</span> Home
+                    </a>
+                </li>
+
+                <!-- 2. Crop Services Dropdown -->
+                <li class="nav-item" id="navCropServices">
+                    <button class="nav-link" type="button" data-i18n="nav_crop_services">
+                        <span class="material-icons">grass</span> Crop Services <span
+                            class="material-icons caret-icon">expand_more</span>
+                    </button>
+                    <div class="nav-dropdown">
+                        <a href="crop.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">psychology</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_crop_advisory">Crop Advisory</span>
+                                <span class="dropdown-desc">AI seasonal crop recommendation</span>
+                            </div>
+                        </a>
+                        <a href="disease.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">biotech</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_disease">Crop Doctor</span>
+                                <span class="dropdown-desc">Leaf disease detection & remedies</span>
+                            </div>
+                        </a>
+                        <a href="crop-care.html" class="dropdown-item">
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_crop_care">Crop Care</span>
+                                <span class="dropdown-desc">Pest control & spray schedules</span>
+                            </div>
+                        </a>
+                        <a href="crop-calendar.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">calendar_month</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_calendar">Crop Calendar</span>
+                                <span class="dropdown-desc">Sowing & harvest cycle timeline</span>
+                            </div>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="fertilizer.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">science</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_fertilizers">Fertilizers Shop</span>
+                                <span class="dropdown-desc">Nutrient products & eco fertilizers</span>
+                            </div>
+                        </a>
+                        <a href="fertilizer-calc.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">calculate</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_fert_calc">Fertilizer Calculator</span>
+                                <span class="dropdown-desc">Custom NPK dosage by acre</span>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+
+                <!-- 3. Market & Finance Dropdown -->
+                <li class="nav-item" id="navMarketFinance">
+                    <button class="nav-link" type="button" data-i18n="nav_market_finance">
+                        <span class="material-icons">trending_up</span> Market & Finance <span
+                            class="material-icons caret-icon">expand_more</span>
+                    </button>
+                    <div class="nav-dropdown">
+                        <a href="market.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">storefront</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_market_prices">Market Mandi Prices</span>
+                                <span class="dropdown-desc">Live APMC wholesale market rates</span>
+                            </div>
+                        </a>
+                        <a href="expenses.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">payments</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_expenses">Expense & Profit</span>
+                                <span class="dropdown-desc">Track income, inputs & net revenue</span>
+                            </div>
+                        </a>
+                        <a href="schemes.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">account_balance</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_schemes">Govt Schemes</span>
+                                <span class="dropdown-desc">Central & state farmer subsidies</span>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+
+                <!-- 4. Weather Alerts -->
+                <li class="nav-item">
+                    <a href="weather.html" class="nav-link active" data-i18n="nav_weather_alerts">
+                        <span class="material-icons">wb_sunny</span> Weather
+                    </a>
+                </li>
+
+                <!-- 5. Community -->
+                <li class="nav-item">
+                    <a href="community.html" class="nav-link" data-i18n="nav_community">
+                        <span class="material-icons">forum</span> Community
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Right Side Actions & User Menu -->
+            <div class="nav-actions">
+                <!-- Language Selector Pill -->
+                <div class="nav-lang-pill">
+                    <span class="material-icons">translate</span>
+                    <select id="langSwitcher" class="nav-lang-select" aria-label="Language Selector">
+                        <option value="en">English (EN)</option>
+                        <option value="hi">हिंदी (HI)</option>
+                        <option value="mr">मराठी (MR)</option>
+                        <option value="gu">ગુજરાતી (GU)</option>
+                    </select>
+                </div>
+
+                <!-- Notifications Icon -->
+                <a href="notifications.html" class="nav-icon-btn" title="Notifications">
+                    <span class="material-icons">notifications</span>
+                    <span class="nav-badge" id="navNotifBadge" style="display: none;">0</span>
+                </a>
+
+                <!-- User Account Dropdown -->
+                <div class="nav-item">
+                    <div class="nav-user-btn" tabindex="0">
+                        <div class="user-avatar-circle" id="navUserAvatar">K</div>
+                        <span class="user-btn-name" id="navUserName">Account</span>
+                        <span class="material-icons" style="font-size: 16px;">arrow_drop_down</span>
+                    </div>
+                    <div class="nav-dropdown dropdown-right">
+                        <a href="profile.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">person</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_profile">My Profile</span>
+                                <span class="dropdown-desc">Farm details & preferences</span>
+                            </div>
+                        </a>
+                        <a href="history.html" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">history</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_history">Activity History</span>
+                                <span class="dropdown-desc">Past predictions & consultations</span>
+                            </div>
+                        </a>
+                        <a href="#" id="navFeedbackLink" class="dropdown-item">
+                            <div class="dropdown-icon"><span class="material-icons">feedback</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" data-i18n="nav_feedback">Feedback</span>
+                                <span class="dropdown-desc">Send suggestions or report bugs</span>
+                            </div>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="index.html" class="dropdown-item" id="navAuthAction">
+                            <div class="dropdown-icon" style="color: #ef4444; background: #fee2e2;"><span
+                                    class="material-icons">logout</span></div>
+                            <div class="dropdown-info">
+                                <span class="dropdown-title" style="color: #ef4444;"
+                                    data-i18n="nav_logout">Logout</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mobile Hamburger Toggle -->
+                <button class="nav-mobile-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+                    <span class="material-icons">menu</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-overlay" id="mobileNavOverlay"></div>
+    <aside class="mobile-drawer" id="mobileDrawer">
+        <div class="drawer-header">
+            <div class="nav-brand">
+                <div class="brand-icon"><span class="material-icons">eco</span></div>
+                <div class="brand-name">KisanCare</div>
+            </div>
+            <button class="drawer-close-btn" id="mobileDrawerClose" aria-label="Close menu">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="drawer-body">
+            <a href="home.html" class="drawer-link"><span class="material-icons">home</span> <span
+                    data-i18n="nav_home">Home</span></a>
+            <a href="weather.html" class="drawer-link active"><span class="material-icons">wb_sunny</span> <span
+                    data-i18n="nav_weather_alerts">Weather Alerts</span></a>
+            <a href="community.html" class="drawer-link"><span class="material-icons">forum</span> <span
+                    data-i18n="nav_community">Community</span></a>
+
+            <div class="drawer-section-title" data-i18n="nav_crop_services">Crop Services</div>
+            <a href="crop.html" class="drawer-link"><span class="material-icons">psychology</span> <span
+                    data-i18n="nav_crop_advisory">Crop Advisory</span></a>
+            <a href="disease.html" class="drawer-link"><span class="material-icons">biotech</span> <span
+                    data-i18n="nav_disease">Crop Doctor</span></a>
+            <a href="crop-care.html" class="drawer-link"><span class="material-icons">local_florist</span> <span
+                    data-i18n="nav_crop_care">Crop Care</span></a>
+            <a href="crop-calendar.html" class="drawer-link"><span class="material-icons">calendar_month</span> <span
+                    data-i18n="nav_calendar">Crop Calendar</span></a>
+            <a href="fertilizer.html" class="drawer-link"><span class="material-icons">science</span> <span
+                    data-i18n="nav_fertilizers">Fertilizers Shop</span></a>
+            <a href="fertilizer-calc.html" class="drawer-link"><span class="material-icons">calculate</span> <span
+                    data-i18n="nav_fert_calc">Fertilizer Calculator</span></a>
+
+            <div class="drawer-section-title" data-i18n="nav_market_finance">Market & Finance</div>
+            <a href="market.html" class="drawer-link"><span class="material-icons">storefront</span> <span
+                    data-i18n="nav_market_prices">Market Prices</span></a>
+            <a href="expenses.html" class="drawer-link"><span class="material-icons">payments</span> <span
+                    data-i18n="nav_expenses">Expense Tracker</span></a>
+            <a href="schemes.html" class="drawer-link"><span class="material-icons">account_balance</span> <span
+                    data-i18n="nav_schemes">Govt Schemes</span></a>
+
+            <div class="drawer-section-title" data-i18n="nav_account">Account</div>
+            <a href="profile.html" class="drawer-link"><span class="material-icons">person</span> <span
+                    data-i18n="nav_profile">Profile</span></a>
+            <a href="history.html" class="drawer-link"><span class="material-icons">history</span> <span
+                    data-i18n="nav_history">History</span></a>
+            <a href="notifications.html" class="drawer-link"><span class="material-icons">notifications</span> <span
+                    data-i18n="nav_notifications">Notifications</span></a>
+            <a href="index.html" class="drawer-link" style="color: #ef4444;"><span class="material-icons"
+                    style="color: #ef4444;">logout</span> <span data-i18n="nav_logout">Logout</span></a>
+        </div>
+    </aside>
+
+
+
+    <main class="container" style="max-width: 960px; margin: 0 auto;">
+
+
+
+        <!-- Mock data banner (shown when backend returns status:"mock") -->
+
+        <div id="mockBanner">
+
+            <span class="material-icons">info</span>
+
+            <span id="mockBannerText">Demo weather data ?????? connect a live API key for real forecasts.</span>
+
+        </div>
+
+
+
+        <!-- Error message -->
+
+        <div id="weatherError"></div>
+
+
+
+        <!-- Search card -->
+
+        <div class="search-card">
+
+            <h1 data-lang="weather_header"> Smart Weather Intelligence</h1>
+
+            <p>Real-time forecasts + AI-powered farming advisories for irrigation, sowing, and spraying.</p>
+
+            <div class="search-row">
+
+                <input type="text" id="weatherLocation" placeholder="Enter city or district (e.g. Vadodara)"
+                    autocomplete="off">
+
+                <button class="btn-search-weather" id="getWeatherBtn">
+                    <span class="material-icons">search</span> Search
+                </button>
+                <button class="btn-search-weather" id="subAlertsBtn"
+                    style="background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;">
+                    <span class="material-icons">notifications_active</span> Subscribe Alerts
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- All results ?????? hidden until first search -->
+
+        <div id="weatherDisplay">
+
+
+
+            <!-- Current conditions -->
+
+            <div class="current-card" id="currentCard">
+
+                <div class="current-main">
+
+                    <div class="location-name" id="displayLocation"></div>
+
+                    <div class="big-temp" id="displayTemp"></div>
+
+                    <div class="condition-text" id="displayCondition"></div>
+
+                    <div class="sun-row">
+
+                        <div class="sun-item">????? Sunrise <span id="displaySunrise"></span></div>
+
+                        <div class="sun-item">????? Sunset <span id="displaySunset"></span></div>
+
+                        <div class="sun-item">??? Feels <span id="displayFeels"></span></div>
+
+                    </div>
+
+                </div>
+
+                <div class="current-stats">
+
+                    <div class="stat-chip">
+
+                        <div class="stat-val" id="displayHumidity"></div>
+
+                        <div class="stat-lbl">Humidity</div>
+
+                    </div>
+
+                    <div class="stat-chip">
+
+                        <div class="stat-val" id="displayWind"></div>
+
+                        <div class="stat-lbl">Wind</div>
+
+                    </div>
+
+                    <div class="stat-chip">
+
+                        <div class="stat-val" id="displayRain"></div>
+
+                        <div class="stat-lbl">Rain 1h</div>
+
+                    </div>
+
+                    <div class="stat-chip">
+
+                        <div class="stat-val" id="displayHiLo"></div>
+
+                        <div class="stat-lbl">High / Low</div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Active Alerts -->
+
+            <div class="section-card" id="alertsCard">
+
+                <div class="section-title">
+
+                    <span class="material-icons">warning</span>
+
+                    Active Weather Alerts
+
+                </div>
+
+                <div class="alerts-row" id="alertsRow">
+
+                    <span class="no-alerts">No severe alerts today.</span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Farming Advisory -->
+
+            <div class="section-card">
+
+                <div class="section-title">
+
+                    <span class="material-icons">agriculture</span>
+
+                    Farming Advisory
+
+                </div>
+
+                <div class="advisory-grid" id="advisoryGrid"><!-- JS populated --></div>
+
+            </div>
+
+
+
+            <!-- Hourly Forecast -->
+
+            <div class="section-card">
+
+                <div class="section-title">
+
+                    <span class="material-icons">schedule</span>
+
+                    Next 24 Hours
+
+                </div>
+
+                <div class="hourly-row" id="hourlyRow"><!-- JS populated --></div>
+
+            </div>
+
+
+
+            <!-- 7-Day Forecast -->
+
+            <div class="section-card">
+
+                <div class="section-title">
+
+                    <span class="material-icons">date_range</span>
+
+                    7-Day Forecast
+
+                </div>
+
+                <div class="daily-list" id="dailyList"><!-- JS populated --></div>
+
+            </div>
+
+
+
+        </div><!-- /weatherDisplay -->
+
+
+
+    </main>
+
+
+
+    <!-- Chat Widget -->
+
+    <div class="chat-btn" id="chat-toggle-btn"><span class="material-icons">chat</span></div>
+
+    <div class="chat-container" id="chat-container">
+
+        <div class="chat-header">
+
+            <span>Kisan AI Assistant</span>
+
+            <span class="material-icons close-btn" id="close-chat">close</span>
+
+        </div>
+
+        <div class="chat-lang-bar">
+
+            <label> Language:</label>
+
+            <select id="chat-lang-select">
+
+                <option value="en">English</option>
+
+                <option value="hi">हिन्दी(Hindi)</option>
+
+                <option value="gu">ગુજરાતી(Gujarati)</option>
+
+                <option value="mr">मराठी (Marathi)</option>
+
+                <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+
+                <option value="ta">தமிழ (Tamil)</option>
+
+                <option value="te"> తెలుగు (Telugu)</option>
+
+                <option value="bn">বাংলা (Bengali)</option>
+
+                <option value="kn">ಕನ್ನಡ (Kannada)</option>
+
+                <option value="ml">മലയാള (Malayalam)</option>
+
+                <option value="or">(Odia)</option>
+
+                <option value="ur">(Urdu)</option>
+
+            </select>
+
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+
+            <div class="message bot">
+
+                <p>Hello! Ask me about weather, rain prediction, or best sowing time! ??????</p>
+
+            </div>
+
+        </div>
+
+        <div class="chat-input-area">
+
+            <label for="chat-file-input" class="file-upload-label"><span
+                    class="material-icons">attach_file</span></label>
+
+            <input type="file" id="chat-file-input" accept="image/*" hidden>
+
+            <input type="text" id="chat-input" placeholder="Type a message...">
+
+            <button id="voice-btn" class="voice-btn" title="Voice Input"><span
+                    class="material-icons">mic</span></button>
+
+            <button id="send-btn"><span class="material-icons">send</span></button>
+
+        </div>
+
+    </div>
+
+
+
+    <script src="js/app.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/i18n.js"></script>
+
+</body>
+
+</html>
